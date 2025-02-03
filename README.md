@@ -16,7 +16,12 @@ Resources: [cplusplus.com](https://cplusplus.com/reference/)
     - [Dictionaries (maps)](#dictionaries-maps)
   - [Loops](#loops)
     - [For](#for)
-  - [Function overloading](#function-overloading)
+  - [Operator overloading](#operator-overloading)
+    - [<](#)
+    - [Constructors](#constructors)
+      - [C++](#c)
+      - [C#](#c)
+    - [Const](#const)
 <!--/TOC-->
 
 ## Basics
@@ -192,7 +197,13 @@ int main() {
 }
 ```
 
-## Function overloading
+## Operator overloading
+
+In C++, many predefined functions use operators that can be overloaded to achieve custom results.
+
+### <
+
+
 
 ```csharp
 class Person {
@@ -228,3 +239,178 @@ int main() {
     return 0;
 }
 ```
+
+### Constructors
+
+#### C++
+```csharp
+// Initialization list: preferred (initialization and assignment in one step).
+Message(const string& text, int index) : stored_text_(text), index_(index) {}
+
+// Initialization with constructor body: less efficient
+// (initialization, assignment of default values, then assignment).
+Message(const string& text, int index) {
+    stored_text_ = text;
+    index_ = index;
+}
+```
+
+#### C#
+```csharp
+// In C#, initialization with constructor body is the preferred and more efficient way.
+public Message(string text, int index) {
+    storedText = text;
+    index = index;
+}
+```
+
+### Const
+
+When Not to Use const for the Return Type:
+Modifiable Return Value: If you want the caller to be able to modify the returned value, you should not use const for the return type. For example, if you have a method that returns a reference to a member variable that the caller should be able to modify:
+std::string& get_first_name() {
+    return first_name_;
+}
+
+Temporary Objects: If the method returns a temporary object (e.g., a local variable or a computed value), you typically don’t use const for the return type:
+std::string get_full_name() {
+    return first_name_ + " " + last_name_;
+}
+
+When Not to Use const for the Method:
+Modifying Member Variables: If the method needs to modify any member variables, it cannot be marked as const. For example, a method that updates the last name:
+void set_last_name(const std::string& last_name) {
+    last_name_ = last_name;
+}
+
+Calling Non-const Methods: If the method needs to call other non-const methods or modify the state of the object, it cannot be marked as const:
+void update_name(const std::string& first_name, const std::string& last_name) {
+    set_first_name(first_name);
+    set_last_name(last_name);
+}
+
+name_ (member variable) is the equivalent of a property in C#.
+
+---
+
+1. Using const and & for Efficiency
+This is your original example, which uses a const reference to avoid copying the string:
+
+class Message {
+public:
+    Message(const std::string& text) : stored_text_(text) {}
+    const std::string& get_text() const {
+        return stored_text_;
+    }
+
+private:
+    std::string stored_text_;
+};
+
+2. Without const and &
+This version copies the string, which can be less efficient for large strings:
+
+class Message {
+public:
+    Message(std::string text) : stored_text_(std::move(text)) {}
+    const std::string& get_text() const {
+        return stored_text_;
+    }
+
+private:
+    std::string stored_text_;
+};
+
+3. Using const but Without &
+This version uses const to ensure the parameter is not modified, but still copies the string:
+
+class Message {
+public:
+    Message(const std::string text) : stored_text_(text) {}
+    const std::string& get_text() const {
+        return stored_text_;
+    }
+
+private:
+    std::string stored_text_;
+};
+
+4. Using const and & with a Default Constructor
+This version includes a default constructor and a setter method:
+
+class Message {
+public:
+    Message() = default;
+    Message(const std::string& text) : stored_text_(text) {}
+    void set_text(const std::string& text) {
+        stored_text_ = text;
+    }
+    const std::string& get_text() const {
+        return stored_text_;
+    }
+
+private:
+    std::string stored_text_;
+};
+
+5. Using const and & with a Move Constructor
+This version uses a move constructor for efficiency when the string can be moved:
+
+class Message {
+public:
+    Message(std::string text) : stored_text_(std::move(text)) {}
+    const std::string& get_text() const {
+        return stored_text_;
+    }
+
+private:
+    std::string stored_text_;
+};
+
+Explanation of const and &:
+const: Ensures that the parameter or return value is not modified.
+& (Reference): Avoids copying the parameter, which can be more efficient for large objects like strings.
+Do these examples help clarify the use of const and &? Let me know if you have more questions!
+
+
+
+
+Vous
+Envoyé par vous :
+in these same examples, is there a difference between these two const keywords?
+
+const std::string& get_text() const {
+Copilot
+Génération de vos réponses…
+
+Envoyé par Copilot :
+Yes, there is a difference between the two const keywords in the method declaration const std::string& get_text() const.
+
+Breakdown of the const Keywords:
+Return Type const:
+const std::string& get_text() const {
+
+This const applies to the return type, indicating that the method returns a constant reference to a std::string. This means the caller cannot modify the returned string through this reference.
+Method const:
+const std::string& get_text() const {
+
+This const at the end of the method declaration indicates that the method is a constant member function. It means that the method does not modify any member variables of the class and can be called on const instances of the class.
+Example with Both const Keywords:
+class Message {
+public:
+    Message(const std::string& text) : stored_text_(text) {}
+    const std::string& get_text() const {
+        return stored_text_;
+    }
+
+private:
+    std::string stored_text_;
+};
+
+Explanation:
+Return Type const: Ensures that the caller cannot modify the stored_text_ through the returned reference.
+Method const: Ensures that the method does not modify the state of the object, allowing it to be called on const instances of Message.
+Example Usage:
+const Message msg("Hello, World!");
+const std::string& text = msg.get_text();
+// text cannot be modified, and msg remains unchanged

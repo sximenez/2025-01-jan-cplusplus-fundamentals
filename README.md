@@ -21,6 +21,7 @@ Resources: [cplusplus.com](https://cplusplus.com/reference/)
     - [Constructors](#constructors)
       - [C++](#c)
       - [C#](#c)
+    - [Stringstream](#stringstream)
     - [Const](#const)
 <!--/TOC-->
 
@@ -30,9 +31,9 @@ Resources: [cplusplus.com](https://cplusplus.com/reference/)
 
 `stdout` is the app output destination, usually the console.
 
-`cin` is a C++ object, reading `stdin` character by character.
+`cin` is a C++ object, reading `stdin` character by character (character input).
 
-`cout` is another C++ object, outputting to the destination.
+`cout` is another C++ object, outputting to the destination (character output).
 
 ## Type safety
 
@@ -261,6 +262,28 @@ Message(const string& text, int index) {
 public Message(string text, int index) {
     storedText = text;
     index = index;
+}
+```
+
+### Stringstream
+
+```csharp
+vector<int> parseInts(string str) {
+	vector<int> arr;
+
+    // Allows to use operators like >> on str.
+    // Doesn't read char by char, but anything between commas.
+    stringstream ss(str);
+    
+    int temp;
+    char comma;
+    
+    while (ss >> temp) {
+        arr.push_back(temp);
+        ss >> comma;
+    }
+    
+    return arr;
 }
 ```
 

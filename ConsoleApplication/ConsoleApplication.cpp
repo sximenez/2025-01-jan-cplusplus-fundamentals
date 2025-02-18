@@ -4,12 +4,16 @@
 #include <iostream>
 #include <sstream>
 #include <algorithm>
+#include <numeric>
 #include <tuple>
+#include <string>
+#include <unordered_map>
+#include <stack>
 using namespace std;
 
 #pragma region Multidimensional arrays ----------------------------------------
 
-static int multidimensionalArrays() {
+static int multidimensional_arrays() {
 	string input = "2 2\n3 1 5 4\n5 1 2 8 9 3\n0 1\n1 3";
 	istringstream cin(input);
 
@@ -154,7 +158,7 @@ public:
 	}
 };
 
-int messangeSender() {
+int messange_sender() {
 	string input = "Alex\nHello Monique!\nWhat'up?\nNot much :(";
 	istringstream cin(input);
 
@@ -174,19 +178,181 @@ int messangeSender() {
 
 #pragma endregion
 
-#pragma region Operator overloading
+#pragma region Operators
 
-void main() {
+void operators() {
 	vector<int> list = { 4, 1, 3, 2 };
-	sort(list.begin(), list.end());
 
-	for (int i = 0; i < list.size(); i++) {
-		cout << list[i] << endl;
+	sort(list.begin(), list.end()); // Defaults to less<int>() or ascending.
+	for (int value : list) {
+		cout << value << endl;
 	}
+
+	cout << endl;
+
+	sort(list.begin(), list.end(), greater<int>()); // Descending.
+	for (int value : list) {
+		cout << value << endl;
+	}
+
+	cout << endl << endl;
+
+	int sum = accumulate(list.begin(), list.end(), 0); // Defaults to plus<int>() or sum.
+	cout << sum << endl;
+
+	cout << endl;
+
+	/*for (int i = 0; i < list.size(); i++) {
+		cout << list[i] << endl;
+	}*/
 
 	/*for (int value : list) {
 		cout << value << endl;
 	}*/
+
+	//cout << sum;
+}
+
+#pragma endregion
+
+#pragma region Basic function
+
+int max_of_four(int a, int b, int c, int d) {
+	return max({ a, b, c, d });
+}
+
+int basic_function() {
+	string input = "3 4 5 6";
+	stringstream cin(input);
+
+	int a, b, c, d;
+	cin >> a >> b >> c >> d;
+	int ans = max_of_four(a, b, c, d);
+	printf("%d", ans);
+
+	return 0;
+}
+
+#pragma endregion
+
+#pragma region Attribute parser
+
+int main() {
+	string input = "4 3\n<tag1 value = \"HelloWorld\">\n<tag2 name = \"Name1\">\n</tag2>\n</tag1>\ntag1.tag2~name\ntag1~name\ntag1~value";
+	stringstream cin(input);
+
+	int n;
+	int q;
+	cin >> n >> q;
+
+	unordered_map<string, string> dictionary;
+	string line;
+	const char OPENING_TAG = '<';
+	const char CLOSING_TAG = '>';
+	const char BACKSLASH = '/';
+	const char QUOTE = '"';
+
+	for (int i = 0; i < n; i++) {
+		string key;
+		string value;
+
+		while (cin >> line) {
+			if (line[1] == BACKSLASH) {
+				break;
+			}
+			else if (line[0] == OPENING_TAG) {
+				key = line.substr(1);
+				continue;
+			}
+			else if (line[0] == QUOTE) {
+				value = line.substr(1);
+				if (value.find(CLOSING_TAG) != string::npos) {
+					size_t pos = value.find(CLOSING_TAG);
+					value = value.substr(0, pos - 1);
+				}
+				else {
+					value = value.substr(0, value.length() - 1);
+				}
+
+				dictionary[key] = value;
+				break;
+			}
+			else if (line[0] != '=') {
+				key += "." + line;
+				dictionary.insert({ key, "" });
+			}
+		}
+	}
+
+	/*vector<string> queries;
+	stack<string> tag_stack;
+	string line;*/
+
+	/*for (int i = 0; i < n; i++) {
+		cin >> line;
+		if (line[1] == '/') {
+			tag_stack.pop();
+		}
+		else {
+			size_t pos = line.find(" ");
+			string tag = line.substr(1, pos - 1);
+
+			if (!tag_stack.empty()) {
+				tag = tag_stack.top() + "." + tag;
+			}
+			tag_stack.push(tag);
+		}
+	}*/
+
+	/*ostringstream sb;
+	while (ss >> temp) {
+		if (temp.find(">") == string::npos) {
+			sb << temp << " ";
+			continue;
+		}
+		sb << temp;
+
+		stringstream inner_ss(sb.str());
+		string inner_temp;
+
+		while (inner_ss >> inner_temp) {
+			string key = inner_temp.substr(1);
+			if (inner_temp.find(">") != string::npos) {
+				break;
+			}
+			inner_ss >> inner_temp;
+
+			key += "~" + inner_temp;
+			dictionary.insert({ key, value });
+
+			inner_ss >> inner_temp >> inner_temp;
+			dictionary[key] = inner_temp.substr(1, inner_temp.length() - 3);
+		}
+
+		break;
+	}
+}
+
+for (int i = 0; i < q; i++) {
+	ss >> temp;
+	queries.push_back(temp);
+}
+
+for (string query : queries) {
+	size_t pos = query.find_last_of(".");
+	if (query.find(".") != string::npos) {
+		query = query.substr(pos + 1);
+	}
+
+	if (dictionary[query] != "") {
+		cout << dictionary[query] << endl;
+	}
+	else {
+		cout << "Not Found!" << endl;
+	}
+}*/
+
+	return 0;
 }
 
 #pragma endregion

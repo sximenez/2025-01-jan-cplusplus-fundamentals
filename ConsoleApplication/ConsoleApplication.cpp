@@ -238,7 +238,10 @@ int basic_function() {
 #pragma region Attribute parser
 
 int main() {
-	string input = "4 3\n<tag1 value = \"HelloWorld\">\n<tag2 name = \"Name1\">\n</tag2>\n</tag1>\ntag1.tag2~name\ntag1~name\ntag1~value";
+	//string input = "4 3\n<tag1 value = \"HelloWorld\">\n<tag2 name = \"Name1\" value = \"ahaha\">\n</tag2>\n</tag1>\ntag1.tag2~name\ntag1~name\ntag1~value";
+	//string input = "10 10\n<a value = \"GoodVal\">\n<b value = \"BadVal\" size = \"10\">\n</b>\n<c height = \"auto\">\n<d size = \"3\">\n<e strength = \"2\">\n</e>\n</d>\n</c>\n</a>\na~value\nb~value\na.b~size\na.b~value\na.b.c~height\na.c~height\na.d.e~strength\na.c.d.e~strength\nd~sze\na.c.d~size";
+	//string input = "6 4\n<a>\n<b name = \"tag_one\">\n<c name = \"tag_two\" value = \"val_907\">\n</c>\n</b>\n</a>\na.b~name\na.b.c~value\na.b.c~src\na.b.c.d~name";
+	string input = "16 14\n<tag1 v1 = \"123\" v2 = \"43.4\" v3 = \"hello\">\n</tag1>\n<tag2 v4 = \"v2\" name = \"Tag2\">\n<tag3 v1 = \"Hello\" v2 = \"World!\">\n</tag3>\n<tag4 v1 = \"Hello\" v2 = \"Universe!\">\n</tag4>\n</tag2>\n<tag5>\n<tag7 new_val = \"New\">\n</tag7>\n</tag5>\n<tag6>\n<tag8 intval = \"34\" floatval = \"9.845\">\n</tag8>\n</tag6>\ntag1~v1\ntag1~v2\ntag1~v3\ntag4~v2\ntag2.tag4~v1\ntag2.tag4~v2\ntag2.tag3~v2\ntag5.tag7~new_val\ntag5~new_val\ntag7~new_val\ntag6.tag8~intval\ntag6.tag8~floatval\ntag6.tag8~val\ntag8~intval";
 	stringstream cin(input);
 
 	int n;
@@ -251,6 +254,7 @@ int main() {
 	const char CLOSING_TAG = '>';
 	const char BACKSLASH = '/';
 	const char QUOTE = '"';
+	string root;
 
 	for (int i = 0; i < n; i++) {
 		string key;
@@ -258,99 +262,80 @@ int main() {
 
 		while (cin >> line) {
 			if (line[1] == BACKSLASH) {
+				string tag = line.substr(2, line.length() - 3); // Recover the tag.
+
+				if (tag == root) {
+					root.clear(); // Clear if same.
+				}
+				else {
+					size_t pos = root.find(tag);
+					if (pos != string::npos) {
+						root = root.substr(0, pos - 1); // Update if different.
+					}
+				}
+
 				break;
 			}
 			else if (line[0] == OPENING_TAG) {
-				key = line.substr(1);
+				size_t pos = line.find(CLOSING_TAG);
+				string tag;
+
+				if (pos != string::npos) { 
+					tag = line.substr(1, pos - 1); // If closing tag, remove.
+				}
+				else {
+					tag = line.substr(1);
+				}
+
+				if (!root.empty()) {
+					root += "."; // If root is not empty, add dot.
+				}
+				root += tag;
+
+				if (pos != string::npos) {
+					break;
+				}
+
 				continue;
 			}
 			else if (line[0] == QUOTE) {
 				value = line.substr(1);
-				if (value.find(CLOSING_TAG) != string::npos) {
-					size_t pos = value.find(CLOSING_TAG);
-					value = value.substr(0, pos - 1);
+				size_t pos = value.find(CLOSING_TAG);
+
+				if (pos != string::npos) {
+					value = value.substr(0, pos - 1); // If closing tag, remove.
 				}
 				else {
 					value = value.substr(0, value.length() - 1);
 				}
 
 				dictionary[key] = value;
-				break;
+
+				if (pos != string::npos) {
+					break;
+				}
 			}
 			else if (line[0] != '=') {
-				key += "." + line;
-				dictionary.insert({ key, "" });
+				key = root + "~" + line;
+				dictionary[key] = "";
 			}
 		}
 	}
 
-	/*vector<string> queries;
-	stack<string> tag_stack;
-	string line;*/
-
-	/*for (int i = 0; i < n; i++) {
+	vector<string> queries;
+	for (int i = 0; i < q; i++) {
 		cin >> line;
-		if (line[1] == '/') {
-			tag_stack.pop();
+		queries.push_back(line);
+	}
+
+	for (string query : queries) {
+		if (dictionary[query] != "") {
+			cout << dictionary[query] << endl;
 		}
 		else {
-			size_t pos = line.find(" ");
-			string tag = line.substr(1, pos - 1);
-
-			if (!tag_stack.empty()) {
-				tag = tag_stack.top() + "." + tag;
-			}
-			tag_stack.push(tag);
+			cout << "Not Found!" << endl;
 		}
-	}*/
-
-	/*ostringstream sb;
-	while (ss >> temp) {
-		if (temp.find(">") == string::npos) {
-			sb << temp << " ";
-			continue;
-		}
-		sb << temp;
-
-		stringstream inner_ss(sb.str());
-		string inner_temp;
-
-		while (inner_ss >> inner_temp) {
-			string key = inner_temp.substr(1);
-			if (inner_temp.find(">") != string::npos) {
-				break;
-			}
-			inner_ss >> inner_temp;
-
-			key += "~" + inner_temp;
-			dictionary.insert({ key, value });
-
-			inner_ss >> inner_temp >> inner_temp;
-			dictionary[key] = inner_temp.substr(1, inner_temp.length() - 3);
-		}
-
-		break;
 	}
-}
-
-for (int i = 0; i < q; i++) {
-	ss >> temp;
-	queries.push_back(temp);
-}
-
-for (string query : queries) {
-	size_t pos = query.find_last_of(".");
-	if (query.find(".") != string::npos) {
-		query = query.substr(pos + 1);
-	}
-
-	if (dictionary[query] != "") {
-		cout << dictionary[query] << endl;
-	}
-	else {
-		cout << "Not Found!" << endl;
-	}
-}*/
 
 	return 0;
 }
